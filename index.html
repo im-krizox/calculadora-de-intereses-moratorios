@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calculadora de Intereses</title>
+</head>
+<body>
+    
+    <!-- Pedimos que introduzca la fecha de inicio y la fecha de fin para calcularla con JS -->
+    <h1>Calculadora de Intereses Moratorios</h1>
+    <form id="main-form">
+        <label for="monto-principal">Monto Principal:</label>
+        <input type="number" id="monto-principal" name="monto-principal" required>
+        <br>
+        <label for="start-date">Fecha de Inicio:</label>
+        <input type="date" id="start-date" name="start-date" required>
+        <br>
+        <label for="end-date">Fecha de Fin:</label>
+        <input type="date" id="end-date" name="end-date" required>
+        <br>
+        <button type="submit">Calcular Intereses</button>
+    </form> 
+     
+    <!-- Mostramos el resultado de los intereses -->
+    <p id="diferencia-dias"></p>
+    <p id="precio-udis-inicio"></p>
+    <p id="precio-udis-fin"></p>
+
+    <!-- Footer -->
+    <footer>
+        <p>Hecho por <a href="https://kristoffer-van.dev/">Kristoffer Van Steemberghe Luján.</a></p>
+    </footer>
+
+    <!-- Código JS -->
+    <script>
+        document.getElementById('main-form').addEventListener('submit', function(event) {
+            event.preventDefault(); // Evita el envío del formulario
+
+            //  *** Obtener las fechas ingresadas ***
+            const startDate = new Date(document.getElementById('start-date').value);
+            const endDate = new Date(document.getElementById('end-date').value);
+
+            // Calcular la diferencia de días
+            const diffTime = Math.abs(endDate - startDate);
+            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+            // Mostrar la diferencia de días
+            document.getElementById('diferencia-dias').textContent = `Diferencia de días: ${diffDays} días.`;
+            
+
+            //  *** Calcular el monto inicial en UDIS ***
+            // Arreglo de meses en español para mapear correctamente
+            const mesesEspanol = [
+                'enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio',
+                'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre'
+            ];
+            
+            // Extrae el mes y año de la fecha de inicio
+            const startMonth = mesesEspanol[startDate.getMonth()];
+            const startYear = startDate.getFullYear();
+
+            // Extrae el mes y año de la fecha de fin
+            const endMonth = mesesEspanol[endDate.getMonth()];
+            const endYear = endDate.getFullYear();
+
+            // Lee el archivo ccp.json y busca el valor de la UDI en la fecha de inicio y fin
+            fetch('ccp.json')
+            .then(response => response.json())
+            .then(data => {
+                // *** Para la fecha de inicio ***
+                const udiStartData = data.find(entry =>
+                    entry.Month.toLowerCase() === startMonth && entry.Year === startYear
+                );
+
+                if (udiStartData) {
+                    const udiStartValue = udiStartData.UDIS;
+                    document.getElementById('precio-udis-inicio').textContent = `El valor de un UDI en ${startMonth} de ${startYear} es de ${udiStartValue}.`;
+                } else {
+                    document.getElementById('precio-udis-inicio').textContent = `No se encontró el valor de la UDI para ${startMonth} de ${startYear}.`;
+                }
+
+                // *** Para la fecha de fin ***
+                const udiEndData = data.find(entry =>
+                    entry.Month.toLowerCase() === endMonth && entry.Year === endYear
+                );
+
+                if (udiEndData) {
+                    const udiEndValue = udiEndData.UDIS;
+                    document.getElementById('precio-udis-fin').textContent = `El valor de un UDI en ${endMonth} de ${endYear} es de ${udiEndValue}.`;
+                } else {
+                    document.getElementById('precio-udis-fin').textContent = `No se encontró el valor de la UDI para ${endMonth} de ${endYear}.`;
+                }
+            })
+            .catch(error => {
+                console.error('Error al leer el archivo ccp.json:', error);
+                document.getElementById('precio-udis-inicio').textContent = 'Error al leer el archivo ccp.json.';
+            });
+        });
+    </script>
+
+</body>
+</html>
