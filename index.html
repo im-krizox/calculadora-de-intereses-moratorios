@@ -61,11 +61,11 @@
             ];
             
             // Extrae el mes y año de la fecha de inicio
-            const startMonth = mesesEspanol[startDate.getMonth()];
+            const startMonth = mesesEspanol[startDate.getMonth() + 1]; // Aumentar en 1 para corregir el desfase
             const startYear = startDate.getFullYear();
 
             // Extrae el mes y año de la fecha de fin
-            const endMonth = mesesEspanol[endDate.getMonth()];
+            const endMonth = mesesEspanol[endDate.getMonth() + 1]; // Aumentar en 1 para corregir el desfase
             const endYear = endDate.getFullYear();
 
             // Lee el archivo ccp.json y busca el valor de la UDI en la fecha de inicio y fin
