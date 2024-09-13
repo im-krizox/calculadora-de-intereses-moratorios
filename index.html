@@ -26,6 +26,7 @@
     <p id="diferencia-dias"></p>
     <p id="precio-udis-inicio"></p>
     <p id="precio-udis-fin"></p>
+    <p id="monto-en-udis-inicio"></p>
 
     <!-- Footer -->
     <footer>
@@ -40,6 +41,9 @@
             //  *** Obtener las fechas ingresadas ***
             const startDate = new Date(document.getElementById('start-date').value);
             const endDate = new Date(document.getElementById('end-date').value);
+
+            //  *** Obtener el monto principal ingresado ***
+            const montoPrincipal = parseFloat(document.getElementById('monto-principal').value);
 
             // Calcular la diferencia de días
             const diffTime = Math.abs(endDate - startDate);
@@ -76,6 +80,10 @@
                 if (udiStartData) {
                     const udiStartValue = udiStartData.UDIS;
                     document.getElementById('precio-udis-inicio').textContent = `El valor de un UDI en ${startMonth} de ${startYear} es de ${udiStartValue}.`;
+
+                    // *** Calcula el monto inicial en UDIS inicio ***
+                    const montoUdisInicio = montoPrincipal / udiStartValue;
+                    document.getElementById('monto-en-udis-inicio').textContent = `El monto inicial en UDIS de la fecha de inicio es de ${montoUdisInicio.toFixed(2)} UDIS.`;
                 } else {
                     document.getElementById('precio-udis-inicio').textContent = `No se encontró el valor de la UDI para ${startMonth} de ${startYear}.`;
                 }
