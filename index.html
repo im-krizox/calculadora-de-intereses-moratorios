@@ -27,6 +27,24 @@
     <p id="precio-udis-inicio"></p>
     <p id="precio-udis-fin"></p>
     <p id="monto-en-udis-inicio"></p>
+    <p id="monto-en-pesos-fin"></p>
+
+    <!-- Mostramos la tabla -->
+     <table id="result-table" border="1">
+        <thead>
+            <tr>
+                <th>CCP UDIS</th>
+                <th>CCP * 1.25</th>
+                <th>CCP 1.25 / 365 días = Factor por día</th>
+                <th>Días del mes</th>
+                <th>Interés mensual en UDIS</th>
+                <th>Interés mensual en MXN</th>
+            </tr>
+        </thead>
+        <tbody>
+            <!-- Las filas se agregarán dinámicamente aquí -->
+        </tbody>
+     </table>
 
     <!-- Footer -->
     <footer>
@@ -55,17 +73,16 @@
 
             //  *** Calcular el monto inicial en UDIS ***
             // Arreglo de meses en español para mapear correctamente
-            const mesesEspanol = [
-                'enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio',
-                'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre'
-            ];
+            const mesesEspanol = [ 'enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio', 'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre' ];
+
+            const tableBody = document.getElementById('result-table').getElementsByTagName('tbody')[0];
             
             // Extrae el mes y año de la fecha de inicio
-            const startMonth = mesesEspanol[startDate.getMonth() + 1]; // Aumentar en 1 para corregir el desfase
+            const startMonth = mesesEspanol[startDate.getMonth()];
             const startYear = startDate.getFullYear();
 
             // Extrae el mes y año de la fecha de fin
-            const endMonth = mesesEspanol[endDate.getMonth() + 1]; // Aumentar en 1 para corregir el desfase
+            const endMonth = mesesEspanol[endDate.getMonth()];
             const endYear = endDate.getFullYear();
 
             // Lee el archivo ccp.json y busca el valor de la UDI en la fecha de inicio y fin
@@ -84,20 +101,71 @@
                     // *** Calcula el monto inicial en UDIS inicio ***
                     const montoUdisInicio = montoPrincipal / udiStartValue;
                     document.getElementById('monto-en-udis-inicio').textContent = `El monto inicial en UDIS de la fecha de inicio es de ${montoUdisInicio.toFixed(2)} UDIS.`;
+
+                    // *** Para la fecha de fin ***
+                    const udiEndData = data.find(entry =>
+                        entry.Month.toLowerCase() === endMonth && entry.Year === endYear
+                    );
+
+                    if (udiEndData) {
+                        const udiEndValue = udiEndData.UDIS;
+                        document.getElementById('precio-udis-fin').textContent = `El valor de un UDI en ${endMonth} de ${endYear} es de ${udiEndValue}.`;
+
+                        // *** Calcula el monto final en pesos ***
+                        const montoEnPesosFin = montoUdisInicio * udiEndValue;
+                        document.getElementById('monto-en-pesos-fin').textContent = `El monto final en pesos es de ${montoEnPesosFin.toFixed(2)}.`;
+                    } else {
+                        document.getElementById('precio-udis-fin').textContent = `No se encontró el valor de la UDI para ${endMonth} de ${endYear}.`;
+                    }
                 } else {
                     document.getElementById('precio-udis-inicio').textContent = `No se encontró el valor de la UDI para ${startMonth} de ${startYear}.`;
                 }
 
-                // *** Para la fecha de fin ***
-                const udiEndData = data.find(entry =>
-                    entry.Month.toLowerCase() === endMonth && entry.Year === endYear
-                );
+                // *** Calcular la tabla de intereses ***
+                let currentDate = new Date(startDate);
 
-                if (udiEndData) {
-                    const udiEndValue = udiEndData.UDIS;
-                    document.getElementById('precio-udis-fin').textContent = `El valor de un UDI en ${endMonth} de ${endYear} es de ${udiEndValue}.`;
-                } else {
-                    document.getElementById('precio-udis-fin').textContent = `No se encontró el valor de la UDI para ${endMonth} de ${endYear}.`;
+                while (currentDate <= endDate) {
+                    const month = mesesEspanol[currentDate.getMonth()];
+                    const year = currentDate.getFullYear();
+
+                    // Busca el valor de la UDI para el mes actual
+                    const udiData = data.find(entry =>
+                        entry.Month.toLowerCase() === month && entry.Year === year
+                    );
+
+                    const udiValue = udiData ? udiData.UDIS : 'No encontrado';
+
+                    // Calculos para la fila
+                    const ccpUdis = udiValue;
+                    const ccp125 = (ccpUdis * 1.25)/100;
+                    const factorPorDia = ccp125 / 365;
+                    // Calcular los dias restantes del mes
+                        let daysInMonth = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 0).getDate();
+                        let daysRemaining;
+
+                        if (currentDate.getTime() === startDate.getTime()) {
+                            daysRemaining = daysInMonth - startDate.getDate(); // Desde el día de inicio
+                        } else if (currentDate.getFullYear() === endDate.getFullYear() && currentDate.getMonth() === endDate.getMonth()) {
+                            daysRemaining = endDate.getDate() + 1; // Hasta el día de la fecha final
+                        } else {
+                            daysRemaining = daysInMonth; // Mes completo
+                        }
+                    const interesMensualEnUdis = factorPorDia * daysRemaining;
+                    const interesMensualEnMXN = interesMensualEnUdis * udiValue;
+
+
+
+                    // Crear la fila de la tabla
+                    const row = tableBody.insertRow();
+                    row.insertCell(0).textContent = ccpUdis;
+                    row.insertCell(1).textContent = ccp125;
+                    row.insertCell(2).textContent = factorPorDia;
+                    row.insertCell(3).textContent = daysRemaining;
+                    row.insertCell(4).textContent = interesMensualEnUdis;
+                    row.insertCell(5).textContent = interesMensualEnMXN.toFixed(2);
+
+                    // Avanza al siguiente mes
+                    currentDate.setMonth(currentDate.getMonth() + 1);
                 }
             })
             .catch(error => {
