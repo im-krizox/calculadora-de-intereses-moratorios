@@ -13,11 +13,19 @@
         <label for="monto-principal">Monto Principal:</label>
         <input type="number" id="monto-principal" name="monto-principal" required>
         <br>
+        <br>
         <label for="start-date">Fecha de Inicio:</label>
         <input type="date" id="start-date" name="start-date" required>
         <br>
+        <label for="udi-mxn-inicio">Ingresa el valor de un UDI a pesos en la fecha de inicio:</label>
+        <input type="number" id="udi-mxn-inicio" name="udi-mxn-inicio" step="0.000001" required>
+        <br>
+        <br>
         <label for="end-date">Fecha de Fin:</label>
         <input type="date" id="end-date" name="end-date" required>
+        <br>
+        <label for="udi-mxn-fin">Ingresa el valor de un UDI a pesos en la fecha de fin:</label>
+        <input type="number" id="udi-mxn-fin" name="udi-mxn-fin" step="0.000001" required>
         <br>
         <button type="submit">Calcular Intereses</button>
     </form> 
@@ -33,22 +41,29 @@
      <table id="result-table" border="1">
         <thead>
             <tr>
-                <th>CCP UDIS</th>
-                <th>CCP * 1.25</th>
+                <th>CCP UDIS (CCP-UDI)</th>
+                <th>CCP * 1.25 (Tasa Mora)</th>
                 <th>CCP 1.25 / 365 días = Factor por día</th>
                 <th>Días del mes</th>
-                <th>Interés mensual en UDIS</th>
-                <th>Interés mensual en MXN</th>
+                <th>Interés mensual en UDIS (Tasa Mora Mes)</th>
+                <th>(UDIs)</th>
+                <th>Interés mensual en MXN (Interés del Mes)</th>
             </tr>
         </thead>
         <tbody>
             <!-- Las filas se agregarán dinámicamente aquí -->
         </tbody>
+        <tfoot>
+            <tr>
+                <td colspan="6">Total Interés mensual en UDIS:</td>
+                <td id="total-interes-mensual-udis">¡To Do!</td>
+            </tr>
+        </tfoot>
      </table>
 
     <!-- Footer -->
     <footer>
-        <p>Hecho por <a href="https://kristoffer-van.dev/">Kristoffer Van Steemberghe Luján.</a></p>
+        <p>Hecho por <a href="https://kristoffer-van.dev/">Kristoffer Van Steemberghe Luján</a>, Roberto Baeza Guerrero y Javier Camacho Guzmán.</p>
     </footer>
 
     <!-- Código JS -->
@@ -62,6 +77,10 @@
 
             //  *** Obtener el monto principal ingresado ***
             const montoPrincipal = parseFloat(document.getElementById('monto-principal').value);
+
+            // *** Obtener el valor de un UDI a pesos en la fecha de inicio y fin ***
+            const udiMXNInicio = parseFloat(document.getElementById('udi-mxn-inicio').value);
+            const udiMXNFin = parseFloat(document.getElementById('udi-mxn-fin').value);
 
             // Calcular la diferencia de días
             const diffTime = Math.abs(endDate - startDate);
@@ -150,9 +169,25 @@
                         } else {
                             daysRemaining = daysInMonth; // Mes completo
                         }
+                    
+                    // 4ta columna
                     const interesMensualEnUdis = factorPorDia * daysRemaining;
-                    const interesMensualEnMXN = interesMensualEnUdis * udiValue;
 
+                    // 5ta columna
+                    if (currentDate.getTime() === startDate.getTime()) {
+                        colUDIS = montoPrincipal / udiMXNInicio;
+                    } else {
+                        colUDIS = parseFloat(tableBody.rows[tableBody.rows.length - 1].cells[5].textContent) +
+                                  parseFloat(tableBody.rows[tableBody.rows.length - 1].cells[6].textContent);
+                    }
+                    
+                    // 6ta columna
+                    // const interesMensualEnMXN = interesMensualEnUdis * udiValue;
+                    if (currentDate.getTime() === startDate.getTime()) {
+                        interesMensualEnMXN = interesMensualEnUdis * colUDIS;
+                    } else {
+                        interesMensualEnMXN = parseFloat(tableBody.rows[0].cells[5].textContent) * interesMensualEnUdis;
+                    }
 
 
                     // Crear la fila de la tabla
@@ -162,7 +197,8 @@
                     row.insertCell(2).textContent = factorPorDia;
                     row.insertCell(3).textContent = daysRemaining;
                     row.insertCell(4).textContent = interesMensualEnUdis;
-                    row.insertCell(5).textContent = interesMensualEnMXN.toFixed(2);
+                    row.insertCell(5).textContent = colUDIS;
+                    row.insertCell(6).textContent = interesMensualEnMXN;
 
                     // Avanza al siguiente mes
                     currentDate.setMonth(currentDate.getMonth() + 1);
