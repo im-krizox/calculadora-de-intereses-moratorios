@@ -3,12 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Calculadora de Intereses</title>
+    <title>Calculadora de Interéses Moratorios</title>
 </head>
 <body>
     
     <!-- Pedimos que introduzca la fecha de inicio y la fecha de fin para calcularla con JS -->
     <h1>Calculadora de Intereses Moratorios</h1>
+    <p>Con datos de Noviembre 1995 - Agosto 2024.</p>
     <form id="main-form">
         <label for="monto-principal">Monto Principal:</label>
         <input type="number" id="monto-principal" name="monto-principal" required>
@@ -27,6 +28,10 @@
         <label for="udi-mxn-fin">Ingresa el valor de un UDI a pesos en la fecha de fin:</label>
         <input type="number" id="udi-mxn-fin" name="udi-mxn-fin" step="0.000001" required>
         <br>
+        <br>
+        <label>ℹ️ Para consultar el valor de un UDI a pesos puedes ingresar <a href="https://ikiwi.com.mx/calculadoras/convertidor-udi-pesos/" target="_blank">aquí</a>.</label>
+        <br>
+        <br>
         <button type="submit">Calcular Intereses</button>
     </form> 
      
@@ -38,7 +43,7 @@
     <p id="monto-en-pesos-fin"></p>
 
     <!-- Mostramos la tabla -->
-     <table id="result-table" border="1">
+    <table id="result-table" border="1">
         <thead>
             <tr>
                 <th>CCP UDIS (CCP-UDI)</th>
@@ -59,7 +64,7 @@
                 <td id="total-interes-mensual-udis">¡To Do!</td>
             </tr>
         </tfoot>
-     </table>
+    </table>
 
     <!-- Footer -->
     <footer>
